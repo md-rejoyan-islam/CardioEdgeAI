@@ -33,14 +33,20 @@ if broken:
 else:
     print("broken links   : none")
 
-# structure audit: a doc is "linked" if any other markdown references it
-all_text = {f.relative_to(REPO).as_posix():
-            f.read_text(encoding="utf-8") for f in md_files}
+# structure audit: a doc is "linked" if any other markdown resolves to it
+referenced = set()
+for f in md_files:
+    text = f.read_text(encoding="utf-8")
+    for match in re.finditer(r"\[[^\]]*\]\(([^)#\s]+)(?:#[^)]*)?\)", text):
+        t = match.group(1)
+        if not t.startswith(("http://", "https://", "mailto:")):
+            referenced.add((f.parent / t).resolve())
+
 print("\ndocs present (docs/ + machine/ + deploy/):")
 for d in sorted(REPO.glob("docs/*.md")) + sorted(REPO.glob("machine/**/*.md")) \
         + sorted(REPO.glob("deploy/**/*.md")):
     name = d.relative_to(REPO).as_posix()
-    linked = any(name in t for src, t in all_text.items() if src != name)
+    linked = d.resolve() in referenced
     print(f"  {'[linked]' if linked else '[ORPHAN]'} {name}")
 
 top = [p.name for p in REPO.iterdir()]
