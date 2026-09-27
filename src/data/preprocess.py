@@ -116,7 +116,7 @@ def detect_r_peaks(signal: np.ndarray, fs: int = SAMPLING_RATE_HZ):
     training set.
     """
     import neurokit2 as nk
-    _, info = nk.ecg_peaks(signal, sampling_rate=fs, method="pantompkins1985")
+    _, info = nk.ecg_peaks(signal, sampling_rate=fs, method="neurokit")
     return info["ECG_R_Peaks"]
 
 
