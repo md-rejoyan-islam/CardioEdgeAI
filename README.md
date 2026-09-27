@@ -111,7 +111,7 @@ python src/data/download_mitbih.py --out data/raw/mitdb
 
 - [x] Phase 1 — Environment setup, MIT-BIH download, signal visualization ([docs](docs/PHASE1.md))
 - [x] Phase 2 — Preprocessing pipeline (filtering, baseline removal, R-peak, segmentation) ([docs](docs/PHASE2.md))
-- [ ] Phase 3 — Classical baseline (RR-interval + morphology features)
+- [x] Phase 3 — Classical baseline (RR-interval + morphology features) ([docs](docs/PHASE3.md))
 - [ ] Phase 4 — 1D CNN baseline with patient-separated evaluation
 - [ ] Phase 5 — Lightweight optimization (quantization / pruning / distillation)
 - [ ] Phase 6 — On-device deployment (TFLite Micro on ESP32-S3) + profiling
