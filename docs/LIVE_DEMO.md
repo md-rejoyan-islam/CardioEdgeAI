@@ -1,4 +1,4 @@
-# Live Data from the CardioTouch 3000 — Guide
+# 🔴 Live Data from the CardioTouch 3000 — Guide
 
 How ECG data gets out of the lab machine and into CardioEdgeAI in real
 time. Three paths, pick by need:

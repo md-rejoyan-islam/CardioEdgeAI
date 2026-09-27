@@ -1,4 +1,4 @@
-# How ECG Electrodes Work & 12-Lead Placement
+# ⚡ How ECG Electrodes Work & 12-Lead Placement
 
 The practical, physics-first version. For the hands-on Bengali walkthrough
 see [`../manuals/CardioTouch_3000_Practical_Guide_BN.docx`](../manuals/CardioTouch_3000_Practical_Guide_BN.docx).

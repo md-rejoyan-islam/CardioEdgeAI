@@ -1,4 +1,4 @@
-# Phase 6 — Edge Deployment (TFLite Micro on ESP32-S3)
+# 6️⃣ Phase 6 — Edge Deployment (TFLite Micro on ESP32-S3)
 
 **Status:** code complete — **hardware bring-up pending** (board not yet
 connected in this session; firmware written and documented for the lab

@@ -1,4 +1,4 @@
-# Phase 5 — Lightweight Optimization (Full-Integer INT8)
+# 5️⃣ Phase 5 — Lightweight Optimization (Full-Integer INT8)
 
 **Status:** complete · **Entry point:** `py src/models/quantize.py`
 

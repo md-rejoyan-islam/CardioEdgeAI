@@ -1,4 +1,4 @@
-# ESP32-S3 Deployment (TFLite Micro)
+# 🚀 ESP32-S3 Deployment (TFLite Micro)
 
 ## What is here
 

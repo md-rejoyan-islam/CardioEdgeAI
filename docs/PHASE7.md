@@ -1,4 +1,4 @@
-# Phase 7 — External Validation on CardioTouch 3000 Recordings
+# 7️⃣ Phase 7 — External Validation on CardioTouch 3000 Recordings
 
 **Status:** tooling complete — **data collection pending** (needs the lab
 machine, a technician, and consented volunteers; not runnable from this

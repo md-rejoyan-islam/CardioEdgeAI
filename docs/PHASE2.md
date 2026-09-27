@@ -1,4 +1,4 @@
-# Phase 2 — Preprocessing Pipeline
+# 2️⃣ Phase 2 — Preprocessing Pipeline
 
 **Status:** complete · **Entry point:** `py src/data/preprocess.py`
 

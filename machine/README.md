@@ -1,4 +1,4 @@
-# The Lab ECG Machine — Bionet CardioTouch 3000
+# 🫀 The Lab ECG Machine — Bionet CardioTouch 3000
 
 Everything about the machine this project records its external-validation
 ECG with: what it is, how it works, its connections, and how data leaves
@@ -11,8 +11,8 @@ it. The photos in [`images/`](images/) are the actual lab unit.
 |---|---|
 | [`images/`](images/) | Photos of the lab machine (converted HEIC → JPG) |
 | [`manuals/`](manuals/) | Practical guide (Bengali docx); add the official user manual PDF here when obtained |
-| [`electrodes/`](electrodes/) | How ECG electrodes work + 12-lead placement |
-| [`data-collection/`](data-collection/) | Step-by-step recording & export protocol for this thesis |
+| [`electrodes/README.md`](electrodes/README.md) | How ECG electrodes work + 12-lead placement |
+| [`data-collection/README.md`](data-collection/README.md) | Step-by-step recording & export protocol for this thesis |
 
 ## What the machine is
 

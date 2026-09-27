@@ -1,4 +1,4 @@
-# Consolidated Results
+# 📊 Consolidated Results
 
 All evaluation on **MIT-BIH DS2 (inter-patient)**: 50,026 beats
 (44,742 N / 1,837 S / 3,447 V) from 22 recordings whose patients were

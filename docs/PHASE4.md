@@ -1,4 +1,4 @@
-# Phase 4 — 1D CNN Baseline (Morphology + RR Branch)
+# 4️⃣ Phase 4 — 1D CNN Baseline (Morphology + RR Branch)
 
 **Status:** complete · **Entry point:** `py src/models/cnn.py`
 

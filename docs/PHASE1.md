@@ -1,4 +1,4 @@
-# Phase 1 — Environment, Dataset, Exploration
+# 1️⃣ Phase 1 — Environment, Dataset, Exploration
 
 **Status:** complete · **Commit:** see git history
 

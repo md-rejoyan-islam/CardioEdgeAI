@@ -1,4 +1,4 @@
-# Recording & Exporting ECG Data from the CardioTouch 3000
+# 📋 Recording & Exporting ECG Data from the CardioTouch 3000
 
 The complete lab-session protocol, from subject to classified file.
 Follow it top-to-bottom every time so every recording is usable.

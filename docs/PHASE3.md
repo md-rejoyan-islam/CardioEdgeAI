@@ -1,4 +1,4 @@
-# Phase 3 — Classical Baseline (RR + Morphology Features)
+# 3️⃣ Phase 3 — Classical Baseline (RR + Morphology Features)
 
 **Status:** complete · **Entry point:** `py src/features/classical.py`
 
