@@ -24,14 +24,28 @@ from src.models.cnn import rr_feature_matrix  # noqa: E402
 REPRESENTATIVE_BEATS = 2000
 
 
-def representative_dataset(Xtr, RRtr):
-    """Yield (signal, rr) input pairs drawn from the DS1 training set."""
+def representative_dataset(Xtr, RRtr, ytr_int=None):
+    """Stratified (signal, rr) calibration pairs, all classes covered.
+
+    A random subset is ~99 % N beats; calibrating on it leaves S/V
+    activation ranges unmeasured, which measurably damaged the INT8
+    accuracy of the oversampled v2 model (86 % before, see docs).
+    """
     rng = np.random.default_rng(42)
-    for i in rng.choice(len(Xtr), REPRESENTATIVE_BEATS, replace=False):
+    if ytr_int is None:
+        idx = rng.choice(len(Xtr), REPRESENTATIVE_BEATS, replace=False)
+    else:  # every minority beat + N fill
+        idx = list(np.where(ytr_int != 0)[0])
+        n_fill = REPRESENTATIVE_BEATS - len(idx)
+        idx.extend(rng.choice(np.where(ytr_int == 0)[0],
+                              max(0, n_fill), replace=False).tolist())
+        idx = np.array(idx)
+        rng.shuffle(idx)
+    for i in idx:
         yield [Xtr[i:i + 1].astype(np.float32), RRtr[i:i + 1]]
 
 
-def convert(model, Xtr, RRtr):
+def convert(model, Xtr, RRtr, ytr_int=None):
     # float32 TFLite
     conv = tf.lite.TFLiteConverter.from_keras_model(model)
     float_tflite = conv.convert()
@@ -39,7 +53,8 @@ def convert(model, Xtr, RRtr):
     # full-integer INT8 with int8 input/output tensors (edge-friendly)
     conv = tf.lite.TFLiteConverter.from_keras_model(model)
     conv.optimizations = [tf.lite.Optimize.DEFAULT]
-    conv.representative_dataset = lambda: representative_dataset(Xtr, RRtr)
+    conv.representative_dataset = lambda: representative_dataset(
+        Xtr, RRtr, ytr_int)
     conv.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     conv.inference_input_type = tf.int8
     conv.inference_output_type = tf.int8
@@ -77,6 +92,10 @@ def tflite_predict(tflite_bytes: bytes, Xte, RRte) -> np.ndarray:
     return preds
 
 
+MODEL_KERAS = MODELS_DIR / "phase4_cnn_v2.keras"  # production model
+EVAL_TAG = "TFLite INT8 (quantized)"
+
+
 def main() -> None:
     X, y, r, record, train_mask, test_mask = load_processed_dataset()
     classes = np.array(["N", "S", "V"])
@@ -84,14 +103,16 @@ def main() -> None:
     Xtr, RRtr = X[train_mask], RR[train_mask]
     Xte, RRte = X[test_mask], RR[test_mask]
 
-    model = tf.keras.models.load_model(MODELS_DIR / "phase4_cnn.keras")
+    model = tf.keras.models.load_model(MODEL_KERAS)
     print("converting ...")
-    float_tflite, int8_tflite = convert(model, Xtr.astype(np.float32), RRtr)
+    ytr_int = np.searchsorted(classes, y[train_mask])
+    float_tflite, int8_tflite = convert(model, Xtr.astype(np.float32), RRtr,
+                                        ytr_int)
 
     MODELS_DIR.mkdir(exist_ok=True)
     (MODELS_DIR / "phase5_cnn_float.tflite").write_bytes(float_tflite)
     (MODELS_DIR / "phase5_cnn_int8.tflite").write_bytes(int8_tflite)
-    keras_kb = (MODELS_DIR / "phase4_cnn.keras").stat().st_size / 1024
+    keras_kb = MODEL_KERAS.stat().st_size / 1024
     float_kb = len(float_tflite) / 1024
     int8_kb = len(int8_tflite) / 1024
     print(f"keras float32 : {keras_kb:8.1f} KB")
