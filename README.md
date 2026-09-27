@@ -115,7 +115,7 @@ python src/data/download_mitbih.py --out data/raw/mitdb
 - [x] Phase 4 — 1D CNN baseline with patient-separated evaluation ([docs](docs/PHASE4.md))
 - [x] Phase 5 — Lightweight optimization (INT8 quantization) ([docs](docs/PHASE5.md))
 - [x] Phase 6 — Edge deployment code (TFLite Micro firmware + benchmark; board bring-up pending) ([docs](docs/PHASE6.md))
-- [ ] Phase 7 — External validation on lab-recorded ECG (CardioTouch 3000)
+- [x] Phase 7 — CardioTouch validation adapter + protocol (data collection pending) ([docs](docs/PHASE7.md))
 - [ ] Phase 8 — Thesis writing and final comparison tables
 
 ## Ethics note
