@@ -60,10 +60,11 @@ def tflite_predict(tflite_bytes: bytes, Xte, RRte) -> np.ndarray:
     out = interpreter.get_output_details()[0]
 
     def q(details, value):
+        # round-to-nearest, matching the firmware's lroundf path exactly
         if details["dtype"] == np.int8:
             scale, zero = details["quantization"]
-            return (np.clip(value / (scale + 1e-12), -128, 127)
-                    + zero).astype(np.int8)
+            return (np.clip(np.round(value / (scale + 1e-12)) + zero,
+                            -128, 127)).astype(np.int8)
         return value.astype(np.float32)
 
     preds = np.empty(len(Xte), dtype=np.int64)

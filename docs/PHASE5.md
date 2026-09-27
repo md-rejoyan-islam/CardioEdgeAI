@@ -29,15 +29,16 @@ shape from the start avoids the issue entirely on any toolchain.
 |---|---|---|---|---|---|---|
 | keras float32 (training format) | 211.2 KB | 94.39 % | 0.706 | 0.971 | 0.295 | 0.851 |
 | TFLite float32 (converted) | 50.3 KB | 94.39 % | 0.706 | 0.971 | 0.295 | 0.851 |
-| **TFLite INT8 (quantized)** | **23.8 KB** | **94.63 %** | **0.724** | 0.972 | **0.343** | 0.857 |
+| **TFLite INT8 (quantized)** | **23.8 KB** | **94.47 %** | **0.713** | 0.971 | 0.313 | 0.856 |
 
 - **8.9x smaller** than the training artifact, **4.3x smaller** than the
   float TFLite — with **zero accuracy cost** (INT8 is marginally better;
   quantization noise acted as a mild regularizer, a commonly reported
   effect on small models).
-- The INT8 result was produced with the actual TFLite interpreter and
-  int8 input/output tensors — the same inference path an ESP32 takes in
-  Phase 6, so no train/deploy mismatch.
+- The INT8 result was produced with the actual TFLite interpreter, int8
+  input/output tensors and round-to-nearest input quantization — the exact
+  arithmetic path the ESP32 firmware takes in Phase 6 (its `lroundf`),
+  so there is no train/deploy mismatch in the reported numbers.
 
 ## Deployment budget
 

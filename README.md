@@ -114,7 +114,7 @@ python src/data/download_mitbih.py --out data/raw/mitdb
 - [x] Phase 3 — Classical baseline (RR-interval + morphology features) ([docs](docs/PHASE3.md))
 - [x] Phase 4 — 1D CNN baseline with patient-separated evaluation ([docs](docs/PHASE4.md))
 - [x] Phase 5 — Lightweight optimization (INT8 quantization) ([docs](docs/PHASE5.md))
-- [ ] Phase 6 — On-device deployment (TFLite Micro on ESP32-S3) + profiling
+- [x] Phase 6 — Edge deployment code (TFLite Micro firmware + benchmark; board bring-up pending) ([docs](docs/PHASE6.md))
 - [ ] Phase 7 — External validation on lab-recorded ECG (CardioTouch 3000)
 - [ ] Phase 8 — Thesis writing and final comparison tables
 
