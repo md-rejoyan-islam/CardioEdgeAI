@@ -51,7 +51,7 @@ Follow it top-to-bottom every time so every recording is usable.
   analysis; keep the raw originals on a backup drive.
 - Any arrhythmia findings a clinician labels beat-by-beat become the
   only ground truth for external S/V performance (see
-  [`../docs/PHASE7.md`](../docs/PHASE7.md)).
+  [`../../docs/PHASE7.md`](../../docs/PHASE7.md)).
 - Update `docs/PHASE7.md` results tables as the collection grows.
 
 ## Quick command reference
