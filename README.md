@@ -3,9 +3,20 @@
 **Lightweight deep learning for real-time ECG arrhythmia detection on edge and wearable devices.**
 
 CardioEdgeAI trains a compact arrhythmia classifier on ECG signals, compresses it with
-quantization / pruning / knowledge distillation, and deploys it as an INT8 TensorFlow Lite
-Micro model that runs in real time on microcontrollers (ESP32-S3, ARM Cortex-M) —
-no cloud, no PC.
+integer quantization, and deploys it as an INT8 TensorFlow Lite Micro model that runs in
+real time on microcontrollers (ESP32-S3, ARM Cortex-M) — no cloud, no PC.
+
+## Results at a glance (MIT-BIH, inter-patient DS2 test)
+
+| Model | Size | Accuracy | Macro-F1 |
+|---|---|---|---|
+| Random Forest (RR + morphology features) | — | 94.3 % | 0.650 |
+| 1D CNN + RR-timing branch (float32) | 211 KB | 94.4 % | 0.706 |
+| **Same, TFLite full-INT8 (deployed)** | **23.8 KB** | **94.5 %** | **0.713** |
+
+INT8 quantization shrank the model **8.9x with zero accuracy loss**; laptop-replay
+latency is 0.02 ms/beat (~54k beats/s — real time needs 1-2). Full tables and the
+reproduction recipe: [docs/RESULTS.md](docs/RESULTS.md).
 
 ## Problem
 
@@ -48,8 +59,8 @@ Profiling ------ accuracy - latency - peak RAM - flash size - energy per inferen
 | Task | Beat classification into AAMI groups **N / S / V** |
 | Training data | MIT-BIH Arrhythmia Database (MLII lead, native 360 Hz) |
 | Beat window | 0.4 s before R peak, 0.6 s after (360 samples per beat) |
-| Baseline | Classical model on RR-interval + morphology features, then 1D CNN |
-| Compression | INT8 quantization, pruning, knowledge distillation |
+| Baseline | Classical model on RR-interval + morphology features, then 1D CNN **with an RR-timing branch** (morphology alone cannot detect S beats) |
+| Compression | Full-integer INT8 post-training quantization (QAT/pruning/distillation: future work) |
 | Deployment | Laptop replay first, then ESP32-S3 (TFLite Micro) |
 | Evaluation | Patient-separated splits, per-class F1, confusion matrix |
 | External test | Lead-II ECG exported from a lab Bionet CardioTouch 3000 |
@@ -80,16 +91,19 @@ CardioEdgeAI/
 ## Getting started
 
 ```bash
-git clone https://github.com/<your-username>/CardioEdgeAI.git
+git clone https://github.com/md-rejoyan-islam/CardioEdgeAI.git
 cd CardioEdgeAI
 
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows (py launcher): py -m venv .venv && .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Download the MIT-BIH Arrhythmia Database (~100 MB) into data/raw/mitdb
 python src/data/download_mitbih.py --out data/raw/mitdb
 ```
+
+Then reproduce the full pipeline with `docs/RESULTS.md` ("Reproducing
+everything").
 
 ## Dataset
 
@@ -116,7 +130,7 @@ python src/data/download_mitbih.py --out data/raw/mitdb
 - [x] Phase 5 — Lightweight optimization (INT8 quantization) ([docs](docs/PHASE5.md))
 - [x] Phase 6 — Edge deployment code (TFLite Micro firmware + benchmark; board bring-up pending) ([docs](docs/PHASE6.md))
 - [x] Phase 7 — CardioTouch validation adapter + protocol (data collection pending) ([docs](docs/PHASE7.md))
-- [ ] Phase 8 — Thesis writing and final comparison tables
+- [x] Phase 8 — Consolidated results + documentation ([docs](docs/RESULTS.md); thesis chapters continue offline)
 
 ## Ethics note
 
