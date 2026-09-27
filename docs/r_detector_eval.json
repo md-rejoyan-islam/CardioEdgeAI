@@ -1,0 +1,34 @@
+{
+  "pantompkins1985": {
+    "sensitivity": 0.6581,
+    "precision": 0.603,
+    "f1": 0.6293,
+    "tp": 66234,
+    "fp": 43609,
+    "fn": 34414
+  },
+  "hamilton2002": {
+    "sensitivity": 0.963,
+    "precision": 0.8841,
+    "f1": 0.9218,
+    "tp": 96921,
+    "fp": 12708,
+    "fn": 3727
+  },
+  "engzeemod2012": {
+    "sensitivity": 0.9305,
+    "precision": 0.9187,
+    "f1": 0.9246,
+    "tp": 93657,
+    "fp": 8290,
+    "fn": 6991
+  },
+  "neurokit": {
+    "sensitivity": 0.9743,
+    "precision": 0.8963,
+    "f1": 0.9337,
+    "tp": 98063,
+    "fp": 11345,
+    "fn": 2585
+  }
+}
