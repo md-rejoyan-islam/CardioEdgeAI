@@ -1,0 +1,16 @@
+# Core
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+
+# ECG signal I/O and processing
+wfdb
+neurokit2
+
+# Modeling (edge stage: tflite-runtime / esptool installed later in deploy/)
+tensorflow
+
+# Optional tooling
+jupyterlab

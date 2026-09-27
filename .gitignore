@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Data — large PhysioNet records and processed arrays are re-generated locally
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.dat
+*.hea
+*.atr
+
+# Model artifacts — publish final small models deliberately with git add -f
+*.h5
+*.keras
+*.tflite
+*.onnx
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
