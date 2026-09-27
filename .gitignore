@@ -12,8 +12,11 @@ venv/
 # Data — large PhysioNet records and processed arrays are re-generated locally
 data/raw/*
 data/processed/*
+data/external/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+data/external/*
+!data/external/.gitkeep
 *.dat
 *.hea
 *.atr
