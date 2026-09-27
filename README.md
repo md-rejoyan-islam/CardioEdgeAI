@@ -82,6 +82,8 @@ CardioEdgeAI/
 ├── deploy/
 │   ├── tflite/       # conversion + benchmark scripts
 │   └── esp32/        # ESP32-S3 firmware using TFLite Micro
+├── tools/            # live-demo tools: watch-folder classifier, RS-232 capture
+├── tests/            # end-to-end pipeline tests (synthetic exports)
 ├── docs/             # thesis chapters, figures, literature notes
 ├── requirements.txt
 ├── CITATION.cff
@@ -131,6 +133,17 @@ everything").
 - [x] Phase 6 — Edge deployment code (TFLite Micro firmware + benchmark; board bring-up pending) ([docs](docs/PHASE6.md))
 - [x] Phase 7 — CardioTouch validation adapter + protocol (data collection pending) ([docs](docs/PHASE7.md))
 - [x] Phase 8 — Consolidated results + documentation ([docs](docs/RESULTS.md); thesis chapters continue offline)
+
+## Live data from the CardioTouch 3000
+
+Three supported paths — watch-folder auto-classification (tested), RS-232
+serial capture, and the continuous AD8232+ESP32 demo:
+see [docs/LIVE_DEMO.md](docs/LIVE_DEMO.md).
+
+```bash
+py tools/watch_folder.py --folder "C:/BMS-Plus/Exports"   # classify each new export
+py tests/test_live_pipeline.py                            # verify the whole chain
+```
 
 ## Ethics note
 

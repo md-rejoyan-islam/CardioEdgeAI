@@ -29,3 +29,6 @@ data/processed/*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Live-capture artifacts from the lab machine (tools/serial_capture.py)
+captures/

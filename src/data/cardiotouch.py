@@ -6,19 +6,19 @@ annotations exist for own recordings). This measures real-world
 generalization: different amplifier, different electrodes, rest-ECG
 12-lead context, exported lead II.
 
-Supported export formats (auto-detected):
-  - CSV / text with two columns: sample index or seconds, millivolts
-    (comma, semicolon or whitespace separated; header row tolerated)
+Supported export formats (auto-detected by `load_ecg_file`):
+  - CSV / text with two columns: seconds and millivolts
+    (comma, semicolon or whitespace separated; a non-numeric header row
+    is skipped automatically)
   - WAV (16-bit PCM, single channel, any rate)
-
-The CardioTouch 3000 can also export SCP-ECG / vendor binary / PDF; those
-need the actual files before a parser can be written honestly — the
-protocol below assumes the lab exports plain CSV or WAV (BMS-Plus
-workstation supports it). If only SCP-ECD is available, convert first
-(e.g. with an SCP-ECG viewer) to CSV.
+  - SCP-ECG (.scp): detected and identified (magic bytes + section
+    table), but waveform decoding is NOT implemented yet — the decoder
+    must be written against a real sample file first. Clear guidance is
+    returned instead of silently wrong output.
 
 Usage:
     py src/data/cardiotouch.py --file exported_ecg.csv
+    py src/data/cardiotouch.py --file export.csv --fs 1000
 
 Ethics (from the thesis protocol):
   - recordings taken by a trained ECG technician / under clinician
@@ -38,36 +38,76 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 from src.config import MODELS_DIR, SAMPLING_RATE_HZ  # noqa: E402
 from src.data.preprocess import (bandpass, detect_r_peaks,  # noqa: E402
                                  segment_beats)
-from src.models.cnn import RR_MEAN_S, RR_STD_S, rr_feature_matrix  # noqa: E402
+from src.models.cnn import rr_feature_matrix  # noqa: E402
+
+SCP_MAGIC = b"SCPECG"
+
+
+class ScpNotDecodedError(RuntimeError):
+    """Raised when an SCP-ECG file is detected but not yet decodable."""
+
+
+def read_two_column_text(path: Path):
+    """Return (seconds, mV) arrays from CSV/txt, tolerating header rows."""
+    rows = []
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            for delim in (",", ";", None):
+                parts = line.split(delim) if delim else line.split()
+                if len(parts) >= 2:
+                    try:
+                        rows.append((float(parts[0].strip()),
+                                     float(parts[1].strip())))
+                        break
+                    except ValueError:
+                        continue  # header or junk line -> skipped
+    if not rows:
+        raise ValueError(f"no two-column numeric data found in {path}")
+    arr = np.asarray(rows)
+    return arr[:, 0], arr[:, 1]
+
+
+def read_scp_info(path: Path) -> dict:
+    """Parse the SCP-ECG header/section table (no waveform decode)."""
+    blob = path.read_bytes()
+    if not blob.startswith(SCP_MAGIC):
+        raise ValueError("not an SCP-ECG file (missing SCPECG magic)")
+    n_sections = int.from_bytes(blob[10:12], "little")
+    info = {"sections": n_sections, "ids": []}
+    for i in range(1, min(n_sections, 12)):  # pointer table starts at 16
+        ptr = blob[16 + (i - 1) * 16: 16 + i * 16]
+        if len(ptr) < 16:
+            break
+        info["ids"].append(int.from_bytes(ptr[12:14], "little"))
+    info["has_rhythm_section"] = 6 in info["ids"]
+    return info
 
 
 def load_ecg_file(path: Path):
-    """Return (signal_mv, fs_hz) from CSV/text or WAV, auto-detected."""
-    if path.suffix.lower() == ".wav":
+    """Return (signal_mv, fs_hz) from CSV/text/WAV; detect SCP files."""
+    suffix = path.suffix.lower()
+    if suffix in (".scp", ".ecg") or path.read_bytes()[:6] == SCP_MAGIC:
+        info = read_scp_info(path)
+        raise ScpNotDecodedError(
+            f"{path.name} is an SCP-ECG file "
+            f"({info['sections']} sections, ids {info['ids']}). "
+            "Waveform decoding is not implemented yet. Either (a) export "
+            "CSV from BMS-Plus / EKG Viewer and point --file at it, or "
+            "(b) keep this .scp file — once a real sample exists the "
+            "decoder can be written and verified against it.")
+    if suffix == ".wav":
         from scipy.io import wavfile
         fs, data = wavfile.read(path)
         signal = data.astype(np.float64)
         if signal.ndim > 1:
             signal = signal[:, 0]
-        # scale 16-bit PCM to an approximate mV range
         peak = np.abs(signal).max() or 1
-        return signal / peak * 2.0, fs
+        return signal / peak * 2.0, float(fs)
 
-    # plain CSV/text
-    for delim in (",", ";", None):
-        try:
-            arr = np.loadtxt(path, delimiter=delim, ndmin=2)
-            break
-        except ValueError:
-            arr = None
-    if arr is None or arr.shape[1] < 2:
-        raise ValueError(
-            f"could not parse {path} as two-column (index/s, mV) data")
-
-    x, y = arr[:, 0], arr[:, 1]
-    dt = np.median(np.diff(x))
+    t, y = read_two_column_text(path)
+    dt = float(np.median(np.diff(t)))
     if dt <= 0:
-        raise ValueError("first column is not monotonic (index/seconds)")
+        raise ValueError("first column is not monotonic (seconds)")
     fs = 1.0 / dt
     if fs < 10:  # column was sample index, not time — rate not inferable
         raise ValueError(
@@ -83,25 +123,37 @@ def resample(signal: np.ndarray, fs: float) -> np.ndarray:
     return sps.resample_poly(signal, SAMPLING_RATE_HZ, int(round(fs)))
 
 
-def classify_recording(path: Path, fs_override: float | None = None) -> None:
+def classify_recording(path: Path, fs_override: float | None = None,
+                       verbose: bool = True) -> dict:
+    """Classify one exported recording; returns a result dict.
+
+    Returned dict: file, n_samples, fs, bpm, n_beats, distribution
+    ({'N': .., 'S': .., 'V': ..}), per_beat class list.
+    """
     import tensorflow as tf
 
     raw, fs = load_ecg_file(path)
     if fs_override:
         fs = fs_override
-    print(f"loaded {path.name}: {len(raw)} samples @ {fs:.1f} Hz")
     signal = bandpass(resample(raw, fs))
 
     r_peaks = detect_r_peaks(signal)
-    print(f"Pan-Tompkins: {len(r_peaks)} R peaks detected "
-          f"({len(r_peaks) / (len(signal) / SAMPLING_RATE_HZ):.1f} bpm mean)")
+    duration_s = len(signal) / SAMPLING_RATE_HZ
+    bpm = len(r_peaks) / duration_s * 60 if duration_s else 0.0
 
-    beats, _, _, _ = segment_beats(signal, r_peaks, ["N"] * len(r_peaks), "ct")
+    beats, _, _, _ = segment_beats(signal, r_peaks,
+                                   ["N"] * len(r_peaks), "ct")
+    result = {"file": path.name, "n_samples": len(raw), "fs": round(fs, 2),
+              "bpm": round(bpm, 1), "n_beats": 0,
+              "distribution": {"N": 0, "S": 0, "V": 0}, "per_beat": []}
     if not beats:
-        print("no complete beat windows — recording too short")
-        return
+        if verbose:
+            print(f"[{path.name}] no complete beat windows — too short")
+        return result
+
     X = np.asarray(beats, dtype=np.float32)
-    RR = rr_feature_matrix(r_peaks, np.array(["ct"] * len(r_peaks)))
+    RR = rr_feature_matrix(np.asarray(r_peaks, dtype=np.int64),
+                           np.array(["ct"] * len(r_peaks)))
 
     blob = (MODELS_DIR / "phase5_cnn_int8.tflite").read_bytes()
     interpreter = tf.lite.Interpreter(model_content=blob)
@@ -114,18 +166,26 @@ def classify_recording(path: Path, fs_override: float | None = None) -> None:
         return (np.clip(np.round(value / (scale + 1e-12)) + zero,
                         -128, 127)).astype(np.int8)
 
-    preds = []
+    classes = ["N", "S", "V"]
+    per_beat = []
     for i in range(len(X)):
         interpreter.set_tensor(sig_in["index"], q(sig_in, X[i:i + 1, :, None]))
         interpreter.set_tensor(rr_in["index"], q(rr_in, RR[i:i + 1]))
         interpreter.invoke()
-        preds.append(np.argmax(interpreter.get_tensor(out["index"])[0]))
+        per_beat.append(classes[
+            int(np.argmax(interpreter.get_tensor(out["index"])[0]))])
 
-    vals, counts = np.unique(preds, return_counts=True)
-    dist = dict(zip([["N", "S", "V"][v] for v in vals], counts.tolist()))
-    print(f"classified beats: {dist}")
-    print("NOTE: no labels exist for own recordings — a clinician must "
-          "review the ECG before these predictions mean anything.")
+    vals, counts = np.unique(per_beat, return_counts=True)
+    result.update({"n_beats": len(per_beat),
+                   "distribution": dict(zip(vals.tolist(),
+                                            counts.tolist())),
+                   "per_beat": per_beat})
+    if verbose:
+        print(f"[{path.name}] {len(raw)} samples @ {fs:.1f} Hz | "
+              f"{len(r_peaks)} R peaks ({bpm:.0f} bpm)")
+        print(f"[{path.name}] classified {len(per_beat)} beats: "
+              f"{result['distribution']}")
+    return result
 
 
 if __name__ == "__main__":
@@ -137,3 +197,5 @@ if __name__ == "__main__":
                              "no time column")
     args = parser.parse_args()
     classify_recording(args.file, args.fs)
+    print("NOTE: no labels exist for own recordings — a clinician must "
+          "review the ECG before these predictions mean anything.")
