@@ -61,3 +61,21 @@ computation runs on the ESP32 firmware (Phase 6).
 ## Next
 
 Phase 5 — INT8 quantization of this model (target: ~4x smaller, edge-ready).
+
+## Addendum: v2 oversampling experiments (Phase 4b)
+
+`src/models/cnn_v2.py` — same architecture/seed/splits as v1 plus gentle
+S-beat oversampling (duplicates with 0.05σ amplitude jitter to ~8 %
+prevalence): **macro-F1 0.718** (v1: 0.706), S precision 0.44 → 0.64.
+This is the best float model, **but it is not deployed**: under full-INT8
+post-training quantization its accuracy collapsed (86 / 33 / 83 % across
+three calibration strategies — see `docs/RESULTS.md`). v1 quantizes with
+zero loss and remains the production model; QAT is the documented route
+to deploying v2-class training. Full ablation table in `docs/RESULTS.md`.
+
+## Addendum: R-peak detector selection
+
+The inference-time detector default changed from Pan-Tompkins (F1 0.63
+vs gold annotations — it missed ~1/3 of beats) to NeuroKit's detector
+(F1 0.93). Evaluation script: `src/evaluation/r_detector_eval.py`;
+the `detect_r_peaks` default in `src/data/preprocess.py` was updated.
