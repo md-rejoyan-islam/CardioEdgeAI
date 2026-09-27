@@ -172,6 +172,11 @@ CardioEdgeAI/
 ├── deploy/
 │   ├── tflite/          # model.h exporter + latency benchmark
 │   └── esp32/CardioEdgeAI/      # TFLite Micro firmware + generated model.h
+├── machine/             # the lab ECG machine: photos, manuals, electrode
+│   ├── images/          #   and data-collection guides (Bionet CardioTouch 3000)
+│   ├── manuals/         #   practical guide (Bengali docx) + official manuals
+│   ├── electrodes/      #   how electrodes work, 12-lead placement
+│   └── data-collection/ #   recording & export protocol, step by step
 ├── tools/
 │   ├── watch_folder.py  # live: auto-classify new BMS-Plus exports
 │   └── serial_capture.py# live: RS-232 byte logger (protocol discovery)
@@ -236,6 +241,13 @@ rolling buffer ≪ 512 KB ESP32-S3 SRAM.
 
 Details, bring-up checklist and open items: [`docs/PHASE6.md`](docs/PHASE6.md)
 and [`deploy/esp32/README.md`](deploy/esp32/README.md).
+
+## The lab machine
+
+The external-validation data source — photos of the actual unit, its
+signal chain, electrode physics/placement, and the full
+record-and-export protocol live in [`machine/`](machine/README.md)
+(includes a Bengali practical guide).
 
 ## Live data from the CardioTouch 3000
 
