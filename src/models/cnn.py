@@ -54,20 +54,31 @@ def rr_feature_matrix(r: np.ndarray, record: np.ndarray) -> np.ndarray:
 
 
 def build_cnn(n_classes: int = 3) -> tf.keras.Model:
-    """~13k-parameter two-branch 1D CNN (morphology + RR timing)."""
+    """~13k-parameter two-branch CNN (morphology + RR timing).
+
+    The morphology branch uses Conv2D with (1, k) kernels on a
+    (batch, 1, time, 1) tensor instead of Conv1D: mathematically
+    identical, but TFLite's full-integer quantizer can only calibrate
+    CONV_2D from a 4D input tensor (Phase 5), so the graph is built
+    quantization-friendly from the start.
+    """
     sig_in = tf.keras.Input(shape=(360, 1))
-    x = tf.keras.layers.Conv1D(16, 7, padding="same", use_bias=False)(sig_in)
+    x = tf.keras.layers.Reshape((1, 360, 1))(sig_in)
+    x = tf.keras.layers.Conv2D(16, (1, 7), padding="same",
+                               use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
-    x = tf.keras.layers.MaxPooling1D(2)(x)
-    x = tf.keras.layers.Conv1D(32, 5, padding="same", use_bias=False)(x)
+    x = tf.keras.layers.MaxPooling2D((1, 2))(x)
+    x = tf.keras.layers.Conv2D(32, (1, 5), padding="same",
+                               use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
-    x = tf.keras.layers.MaxPooling1D(2)(x)
-    x = tf.keras.layers.Conv1D(64, 3, padding="same", use_bias=False)(x)
+    x = tf.keras.layers.MaxPooling2D((1, 2))(x)
+    x = tf.keras.layers.Conv2D(64, (1, 3), padding="same",
+                               use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
-    x = tf.keras.layers.GlobalAveragePooling1D()(x)
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
     rr_in = tf.keras.Input(shape=(4,))
     h = tf.keras.layers.Concatenate()([x, rr_in])
