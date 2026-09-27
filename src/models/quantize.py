@@ -34,11 +34,15 @@ def representative_dataset(Xtr, RRtr, ytr_int=None):
     rng = np.random.default_rng(42)
     if ytr_int is None:
         idx = rng.choice(len(Xtr), REPRESENTATIVE_BEATS, replace=False)
-    else:  # every minority beat + N fill
-        idx = list(np.where(ytr_int != 0)[0])
-        n_fill = REPRESENTATIVE_BEATS - len(idx)
+    else:  # minority beats capped at 25% of the calibration set ...
+        min_idx = np.where(ytr_int != 0)[0]
+        cap = int(0.25 * REPRESENTATIVE_BEATS)
+        if len(min_idx) > cap:
+            min_idx = rng.choice(min_idx, cap, replace=False)
+        idx = list(min_idx)
         idx.extend(rng.choice(np.where(ytr_int == 0)[0],
-                              max(0, n_fill), replace=False).tolist())
+                              REPRESENTATIVE_BEATS - len(idx),
+                              replace=False).tolist())
         idx = np.array(idx)
         rng.shuffle(idx)
     for i in idx:
@@ -92,7 +96,7 @@ def tflite_predict(tflite_bytes: bytes, Xte, RRte) -> np.ndarray:
     return preds
 
 
-MODEL_KERAS = MODELS_DIR / "phase4_cnn_v2.keras"  # production model
+MODEL_KERAS = MODELS_DIR / "phase4_cnn.keras"  # production (v2 oversampled model is not PTQ-robust, see docs)
 EVAL_TAG = "TFLite INT8 (quantized)"
 
 
