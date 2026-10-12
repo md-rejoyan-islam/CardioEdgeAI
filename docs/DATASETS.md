@@ -9,7 +9,7 @@ Datasets used or planned for CardioEdgeAI, all stored locally under
 | PTB-XL 1.0.3 | `data/raw/ptbxl/` | 3.2 GB | ✅ complete (21,799/21,799 both 100 Hz + 500 Hz, verified) | Modern 12-lead generalization testing |
 | MIT-BIH Atrial Fibrillation | `data/raw/afdb/` | 607 MB | ✅ complete (verified, 25 records) | AF rhythm-level future work |
 | Kaggle ECG Heartbeat | `data/raw/kaggle_ecg/` | ~700 MB | 🔑 needs Kaggle account | Beginner-friendly CSV beats (derived from MIT-BIH/PTB) |
-| Chapman-Shaoxing | `data/raw/chapman/` | ~2.8 GB | ⏳ finishing | Large-scale 12-lead future work |
+| Chapman-Shaoxing | `data/raw/chapman/` | 5.5 GB | ✅ complete (45,152/45,152 records, verified) | Large-scale 12-lead future work |
 
 ## MIT-BIH Arrhythmia Database (main dataset)
 
