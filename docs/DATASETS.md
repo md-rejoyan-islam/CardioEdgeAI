@@ -6,10 +6,10 @@ Datasets used or planned for CardioEdgeAI, all stored locally under
 | Dataset | Folder | Size | Status | Purpose |
 |---|---|---|---|---|
 | MIT-BIH Arrhythmia | `data/raw/mitdb/` | 90 MB | ✅ complete | Beat-level N/S/V training + testing (the main dataset) |
-| PTB-XL 1.0.3 | `data/raw/ptbxl/` | ~7 GB | ✅ complete | Modern 12-lead generalization testing |
-| MIT-BIH Atrial Fibrillation | `data/raw/afdb/` | ~900 MB | ⏳ pending (PhysioNet throttled) | AF rhythm-level future work |
+| PTB-XL 1.0.3 | `data/raw/ptbxl/` | ~7 GB | ⏳ downloading | Modern 12-lead generalization testing |
+| MIT-BIH Atrial Fibrillation | `data/raw/afdb/` | 607 MB | ✅ complete (verified, 25 records) | AF rhythm-level future work |
 | Kaggle ECG Heartbeat | `data/raw/kaggle_ecg/` | ~700 MB | 🔑 needs Kaggle account | Beginner-friendly CSV beats (derived from MIT-BIH/PTB) |
-| Chapman-Shaoxing | `data/raw/chapman/` | ~10 GB | 🔑 needs credentialed PhysioNet | Large-scale 12-lead future work |
+| Chapman-Shaoxing | `data/raw/chapman/` | 2.3 GB | ⏳ downloading | Large-scale 12-lead future work |
 
 ## MIT-BIH Arrhythmia Database (main dataset)
 
@@ -47,10 +47,14 @@ Datasets used or planned for CardioEdgeAI, all stored locally under
 - **Source**: <https://physionet.org/content/afdb/1.0.0/>
 - **Contents**: 25 long-term (~10 h) 2-lead records, 250 Hz, AF episode
   annotations — the dataset for rhythm-level AF detection future work
-- **Download** (run when PhysioNet is responsive):
+- **Downloaded from** PhysioNet's public S3 bucket (`s3://physionet-open/afdb/1.0.0/`)
+  — the web route was throttled to <1 KB/s from this network while S3
+  delivered ~5 MB/s. Files are identical to physionet.org.
+- **Downloaded with**:
   ```bash
-  py -c "import wfdb; wfdb.dl_database('afdb', dl_dir='data/raw/afdb')"
+  aws s3 sync --no-sign-request s3://physionet-open/afdb/1.0.0/ data/raw/afdb
   ```
+- **Verified**: 25 records in RECORDS, wfdb reads record 04015 (250 Hz, 2 leads, ~10 h).
 
 ## Kaggle ECG Heartbeat Categorization
 
@@ -68,9 +72,11 @@ Datasets used or planned for CardioEdgeAI, all stored locally under
 ## Chapman-Shaoxing 12-lead
 
 - **Source**: <https://physionet.org/content/ecg-arrhythmia/1.0.0/>
-- **Credentialed access required**: PhysioNet account → *credentialing*
-  (DUA acceptance) → then `wfdb` downloads work. Apply once, approval
-  usually takes a day.
+- **Source**: <https://physionet.org/content/ecg-arrhythmia/1.0.0/>
+- The anonymous public S3 mirror works for this dataset:
+  ```bash
+  aws s3 sync --no-sign-request s3://physionet-open/ecg-arrhythmia/1.0.0/ data/raw/chapman
+  ```
 - 45,152 patients × 10 s 12-lead — production-scale future work only.
 
 ## Verify a downloaded dataset (PTB-XL example)
