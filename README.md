@@ -138,6 +138,16 @@ Adam 1e-3 · batch 256 · ≤ 25 epochs · early stopping (patience 8) on four p
 | 4️⃣ | **TFLite cannot integer-quantize Conv1D-first graphs** (`conv.cc input->dims->size != 4`) — the `Conv2D((1,k))` pattern fixes it for free | `docs/PHASE5.md` |
 | 5️⃣ | **Quantization acted as a mild regularizer** — INT8 marginally outperformed float on the deployed model | `docs/RESULTS.md` |
 
+## 📓 Colab notebooks
+
+Interactive previews — each link opens directly in Google Colab (no setup needed):
+
+| Notebook | Contents |
+|---|---|
+| [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/md-rejoyan-islam/CardioEdgeAI/blob/main/notebooks/MIT_BIH_Preview_Colab.ipynb) [MIT-BIH Preview](https://colab.research.google.com/github/md-rejoyan-islam/CardioEdgeAI/blob/main/notebooks/MIT_BIH_Preview_Colab.ipynb) | Raw ECG, filtering, R-peaks, N/S/V beat windows, patient table |
+| [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/md-rejoyan-islam/CardioEdgeAI/blob/main/notebooks/Datasets_Preview_Colab.ipynb) [Datasets Preview](https://colab.research.google.com/github/md-rejoyan-islam/CardioEdgeAI/blob/main/notebooks/Datasets_Preview_Colab.ipynb) | afdb AF episodes, PTB-XL 12-lead ECGs + diagnoses, Chapman-Shaoxing |
+| [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/md-rejoyan-islam/CardioEdgeAI/blob/main/notebooks/Arrhythmia_Types_Colab.ipynb) [Arrhythmia Graphs](https://colab.research.google.com/github/md-rejoyan-islam/CardioEdgeAI/blob/main/notebooks/Arrhythmia_Types_Colab.ipynb) | ECG graphs of 19 arrhythmia types (self-contained, runs in seconds) |
+
 ## 📁 Repository structure
 
 ```
